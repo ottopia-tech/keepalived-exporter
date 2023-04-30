@@ -27,3 +27,4 @@ conan_imports_manifest.txt
 ignore
 keepalived-exporter
 version.txt
+/main
