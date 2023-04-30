@@ -49,7 +49,7 @@ endif
 lint: lintdeps ## to lint the files
 	$(LINTER) run --config=.golangci-lint.yml ./...
 
-build: $(VERSION_FILE) ## Build the binary file
+build: $(VERSION_FILE) install ## Build the binary file
 	@go build -o $(PROJECT_NAME) -v -ldflags="$(LD_FLAGS)" cmd/$(PROJECT_NAME)/main.go
 
 test:

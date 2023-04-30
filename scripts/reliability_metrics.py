@@ -2,12 +2,14 @@
 import datetime
 import os
 import logging
+import sys
 import threading
 import queue
 import re
 from ottopia_logging.logging_factory import LoggingFactory
 from ottopia_logging.log_level import LogLevel
 from ottopia_logging.logging_settings import LoggingSettings
+import dataclasses
 
 
 class LoggerSetting(LoggingSettings):
@@ -27,7 +29,7 @@ class LoggerSetting(LoggingSettings):
         arbitrary_types_allowed = True
 
 
-
+@dataclasses.dataclass
 class LineData:
     def __init__(self, line: str, syslog_date: datetime.datetime):
         self.line = line
@@ -40,6 +42,11 @@ class Service:
         self.event = event
         self.queue = queue.Queue()
         self.thread = threading.Thread(group=None, target=self.find)
+        self._log = logging.getLogger(f'{self.name}')
+        self._logstash = LoggingFactory.get_logger(
+            module_name=self.name,
+            logging_settings=LoggerSetting(),
+        )
 
     def find(self):
         fail_line: str = f'{self.name}.service: Main process exited, code=exited, status=1/FAILURE'
@@ -49,29 +56,22 @@ class Service:
                 self.report_to_logstash(line_data.syslog_date, fail_line)
 
     def report_to_logstash(self, syslog_date: datetime.datetime, fail_line: str):
-        logstash_logger = LoggingFactory.get_logger(
-            module_name=self.name,
-            logging_settings=LoggerSetting(),
-        )
-        logstash_logger.info(f'service {self.name} failed on {syslog_date}: {fail_line}')
+        self._logstash.info(f'service {self.name} failed on {syslog_date}: {fail_line}')
 
     def start(self):
-        logger = logging.getLogger(f'{self.name}')
-        logger.info('starting service')
+        self._log.info('starting service')
         self.thread.start()
 
     def stop(self):
-        logger = logging.getLogger(f'{self.name}')
-        logger.info('stopping service')
+        self._log.info('stopping service')
 
         if self.queue.empty() and self.thread.is_alive():
-            logger.debug('putting None on queue')
+            self._log.debug('putting None on queue')
             self.queue.put(None)
         self.thread.join()
 
     def async_analyze(self, line_data: LineData):
-        logger = logging.getLogger(f'{self.name}')
-        logger.debug('putting line on queue')
+        self._log.debug('putting line on queue')
         self.queue.put(line_data)
 
 
@@ -81,7 +81,8 @@ class SyslogParser:
         self.services: list[Service] = services
         self.current_time: datetime.datetime = datetime.datetime.now()
         # date format is: 'MMM dd HH:MM:SS'
-        self.regex: re.Pattern[str] = re.compile(r'(\w{3}\s+ \d{2}\s+\d{2}:\d{2}:\d{2})')
+        self.regex: re.Pattern[str] = re.compile(r'(\w{3} \d{2} \d{2}:\d{2}:\d{2})')
+        self._log = logging.getLogger('syslog-parser')
 
 
 
@@ -90,7 +91,6 @@ class SyslogParser:
         put lines from chunk on queue, return True if chunk is in range, False otherwise
         '''
 
-        logger = logging.getLogger(__name__)
         THRESHOLD_SECONDS: datetime.timedelta = datetime.timedelta(seconds=5)
         lines: reversed[str] = reversed(chunk.split('\n'))
         continue_flag: bool = True
@@ -110,7 +110,7 @@ class SyslogParser:
                     for service in self.services:
                         service.async_analyze(line_data)
                 else:
-                    logger.debug(f'{line} not in range, {self.current_time}')
+                    self._log.debug(f'{line} not in range, {self.current_time}')
                     break
 
             except ValueError:
@@ -148,22 +148,24 @@ class SyslogParser:
                     continue_flag = self.put_chunk_lines_on_queue(chunk[pos + 1:])
 
         except Exception as e:
-            logger = logging.getLogger(__name__)
-            logger.exception(e)
+            self._log.exception(e)
             return 1
 
         return 0
 
 
-def init_logging():
-    logging.basicConfig(filename='example.log', format='[%(asctime)s] [%(levelname)s] [%(name)s] [%(funcName)s:%(lineno)d] %(message)s', filemode='w', level=logging.INFO)
+def init_logging() -> logging.Logger:
+    log_file_name: str = os.path.basename(__file__).split('.')[0]
+    logging.basicConfig(filename=f'{log_file_name}.log', format='[%(asctime)s] [%(levelname)s] [%(name)s] [%(funcName)s:%(lineno)d] %(message)s', filemode='w', level=logging.INFO)
     logger = logging.getLogger(__name__)
     logger.addHandler(logging.StreamHandler())
-    logger.info('starting')
+
+    return logger
 
 
 def main() -> int:
-    init_logging()
+    logger = init_logging()
+    logger.info('starting')
 
     event: threading.Event = threading.Event()
     SERVICE_NAMES: list[str] = ['tca', 'relayserver']
@@ -178,7 +180,6 @@ def main() -> int:
     for service in services:
         service.stop()
 
-    logger = logging.getLogger(__name__)
     logger.info('done')
     return ret_val
 
