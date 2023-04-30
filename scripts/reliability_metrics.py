@@ -15,7 +15,7 @@ class LoggerSetting(LoggingSettings):
     Logger settings
     """
 
-    DEFAULT_COMPONENT_NAME: str = "keepalived-exporter"
+    DEFAULT_COMPONENT_NAME: str = "reliability-metrics"
 
     DEFAULT_LOG_LEVEL: LogLevel = LogLevel.INFO
 
