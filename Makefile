@@ -19,7 +19,7 @@ PYTHON_VER ?= 3.9
 PYTHON_COMMAND ?= python
 PIP_COMMAND ?= pip
 VENV_PATH ?= venv
-VENV_BIN_PATH ?= $(VENV_PATH)/bin
+VENV_BIN ?= $(VENV_PATH)/bin
 PYPI_SERVER ?= ""
 ifneq ($(PYPI_SERVER), "")
 	PYPI_CMD=-i $(PYPI_SERVER)
@@ -75,16 +75,16 @@ $(VERSION_FILE): # Creates $(VERSION_FILE) file
 
 $(VENV_PATH):
 	$(PYTHON_COMMAND)$(PYTHON_VER) -m venv $(VENV_PATH)
-	$(VENV_BIN)$(PIP_COMMAND) install --upgrade $(PIP_COMMAND)
+	$(VENV_BIN)/$(PIP_COMMAND) install --upgrade $(PIP_COMMAND)
 
 $(VENV_PATH)/req-done: $(VENV_PATH) requirements.txt
-	$(VENV_BIN)$(PIP_COMMAND) install -r requirements.txt $(PYPI_CMD)
+	$(VENV_BIN)/$(PIP_COMMAND) install -r requirements.txt $(PYPI_CMD)
 	@touch $@
 
 install: $(VENV_PATH)/req-done ## install dependencies for production
-	$(VENV_BIN)$(PYTHON_COMMAND) -m $(PIP_COMMAND) install -e . $(PYPI_CMD)
+	$(VENV_BIN)/$(PIP_COMMAND) install -e . $(PYPI_CMD)
 
 format: ## check formatting
-	$(VENV_BIN)$(PYTHON_COMMAND) -m black --check app tests
-	$(VENV_BIN)$(PYTHON_COMMAND) -m isort --profile black -c app tests
+	$(VENV_BIN)/$(PYTHON_COMMAND) -m black --check app tests
+	$(VENV_BIN)/$(PYTHON_COMMAND) -m isort --profile black -c app tests
 
