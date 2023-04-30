@@ -82,7 +82,7 @@ $(VENV_PATH)/req-done: $(VENV_PATH) requirements.txt
 	@touch $@
 
 install: $(VENV_PATH)/req-done ## install dependencies for production
-	$(VENV_BIN)/$(PIP_COMMAND) install -e . $(PYPI_CMD)
+	$(VENV_BIN)/$(PYTHON_COMMAND) -m $(PIP_COMMAND) install -e . $(PYPI_CMD)
 
 format: ## check formatting
 	$(VENV_BIN)/$(PYTHON_COMMAND) -m black --check app tests
