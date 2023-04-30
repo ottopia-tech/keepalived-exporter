@@ -34,7 +34,7 @@ endif
 
 RELEASE_FILENAME := $(PROJECT_NAME)-$(VERSION).linux-$(ARCH)
 
-.PHONY: all dep lint build clean
+.PHONY: all dep lint build clean format test install release
 
 all: dep build
 
