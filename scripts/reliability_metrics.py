@@ -81,7 +81,7 @@ class SyslogParser:
         self.services: list[Service] = services
         self.current_time: datetime.datetime = datetime.datetime.now()
         # date format is: 'MMM dd HH:MM:SS'
-        self.regex: re.Pattern[str] = re.compile(r'(\w{3} \d{2} \d{2}:\d{2}:\d{2})')
+        self.regex: re.Pattern[str] = re.compile(r'(\w{3}\s+ \d{2}\s+\d{2}:\d{2}:\d{2})')
 
 
 
