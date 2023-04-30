@@ -38,7 +38,7 @@ pipeline {
                     stage('Build') {
                         steps {
                             sh '''
-                                make venv install build
+                                make build
                             '''
                         }
                     }
