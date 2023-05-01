@@ -15,9 +15,16 @@ setup_device_ip() {
     fi
 }
 
+report_reliability_metrics() {
+    local -r cur_dir=$(dirname $(realpath $0))
+
+    ${cur_dir}/reliability_metrics.sh ${mode}
+}
+
 main() {
     set_variables $@
     setup_device_ip
+    report_reliability_metrics
 }
 
 main $1 $2 $5

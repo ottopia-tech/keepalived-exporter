@@ -38,7 +38,7 @@ pipeline {
                     stage('Build') {
                         steps {
                             sh '''
-                                make build
+                                dpkg-buildpackage -b -uc -ui
                             '''
                         }
                     }

@@ -2,10 +2,12 @@
 import datetime
 import os
 import logging
-import sys
 import threading
 import queue
 import re
+import argparse
+from builtins import staticmethod
+
 from ottopia_logging.logging_factory import LoggingFactory
 from ottopia_logging.log_level import LogLevel
 from ottopia_logging.logging_settings import LoggingSettings
@@ -27,6 +29,52 @@ class LoggerSetting(LoggingSettings):
         """
 
         arbitrary_types_allowed = True
+
+
+class StateBase:
+    pass
+
+
+class StateFactory:
+    states: dict = {}
+
+    @staticmethod
+    def get_state(state: str) -> StateBase:
+        if state in states:
+            return states[state]()
+        else:
+            raise ValueError(f'Invalid state: {state}')
+
+    @staticmethod
+    def register_state(state: str, state_class: StateBase):
+        states[state] = state_class
+
+
+class StateBase:
+    def __init__(self, state: str):
+        self._name: str = f'KeepalivedState{state}'
+        self._log: logging.Logger = logging.getLogger(self._name)
+        self._logstash = LoggingFactory.get_logger(
+            module_name=self.name,
+            logging_settings=LoggerSetting(),
+        )
+        self.current_state: str = state
+        StateFactory.register_state(state.upper(), self)
+
+    def report(self, cls) -> int:
+        self._log.info(f'Entering {self.current_state} state')
+        self._logstash.info(f'Entering {self.current_state} state')
+        return 0
+
+
+class MasterState(StateBase):
+    def __init__(self):
+        super().__init__('Master')
+
+
+class BackupState(StateBase):
+    def __init__(self):
+        super().__init__('Backup')
 
 
 @dataclasses.dataclass
@@ -75,16 +123,18 @@ class Service:
         self.queue.put(line_data)
 
 
-class SyslogParser:
+class FaultState(StateBase):
     SYSLOG_PATH: str = '/var/log/syslog'
-    def __init__(self, services: list[Service]):
-        self.services: list[Service] = services
+    SERVICE_NAMES: list[str] = ['tca', 'relayserver']
+
+    def __init__(self):
+        super().__init__('Fault')
         self.current_time: datetime.datetime = datetime.datetime.now()
         # date format is: 'MMM dd HH:MM:SS'
         self.regex: re.Pattern[str] = re.compile(r'(\w{3} \d{2} \d{2}:\d{2}:\d{2})')
-        self._log = logging.getLogger('syslog-parser')
 
-
+        self.event: threading.Event = threading.Event()
+        self.services: list[Service] = [Service(service_name, self.event) for service_name in FaultState.SERVICE_NAMES]
 
     def put_chunk_lines_on_queue(self, chunk: str) -> bool:
         '''
@@ -153,6 +203,24 @@ class SyslogParser:
 
         return 0
 
+    def report(self) -> int:
+        super().report()
+
+        for service in self.services:
+            service.start()
+        ret_val: int = self.search_for_services_errors()
+        self.event.set()
+        for service in self.services:
+            service.stop()
+
+        return ret_val
+
+
+def get_arguments() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description='find services errors in syslog')
+    parser.add_argument('state', choices=['MASTER', 'BACKUP', 'FAULT'], help='state of the machine')
+    return parser.parse_args()
+
 
 def init_logging() -> logging.Logger:
     log_file_name: str = os.path.basename(__file__).split('.')[0]
@@ -167,27 +235,19 @@ def main() -> int:
     logger = init_logging()
     logger.info('starting')
 
-    event: threading.Event = threading.Event()
-    SERVICE_NAMES: list[str] = ['tca', 'relayserver']
-    services: list[Service] = [Service(service_name, event) for service_name in SERVICE_NAMES]
-    for service in services:
-        service.start()
+    args: argparse.Namespace = get_arguments()
 
-    syslog_parser: SyslogParser = SyslogParser(services)
-    ret_val: int = syslog_parser.search_for_services_errors()
-
-    event.set()
-    for service in services:
-        service.stop()
+    state: StateBase = StateFactory.get_state(args.state.upper())
+    ret_val: int = state.report()
 
     logger.info('done')
     return ret_val
 
 
-import unittest
+#import unittest
 # write unit tests for each function in this module
-def test_search_for_services_errors():
-    pass
+#def test_search_for_services_errors():
+#    pass
 
 
 if __name__ == "__main__":
