@@ -75,10 +75,10 @@ $(VERSION_FILE): # Creates $(VERSION_FILE) file
 
 $(VENV_PATH):
 	$(PYTHON_COMMAND)$(PYTHON_VER) -m venv $(VENV_PATH)
-	$(VENV_BIN)/$(PIP_COMMAND) install --upgrade $(PIP_COMMAND)
+	$(VENV_BIN)/$(PYTHON_COMMAND) -m $(PIP_COMMAND) install --upgrade $(PIP_COMMAND)
 
 $(VENV_PATH)/req-done: $(VENV_PATH) requirements.txt
-	$(VENV_BIN)/$(PIP_COMMAND) install -r requirements.txt $(PYPI_CMD)
+	$(VENV_BIN)/$(PYTHON_COMMAND) -m $(PIP_COMMAND) install -r requirements.txt $(PYPI_CMD)
 	@touch $@
 
 install: $(VENV_PATH)/req-done ## install dependencies for production
