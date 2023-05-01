@@ -1,6 +1,6 @@
 VERSION_FILE := version.txt
 export DESTDIR?=.
-export KEEPALIVED_EXPORTER_DIR=$(DESTDIR)/keepalived-exporter
+export KEEPALIVED_EXPORTER_DIR=$(DESTDIR)/opt/ottopia/keepalived-exporter
 
 PROJECT_NAME := keepalived-exporter
 PKG := "github.com/ottopia-tech/$(PROJECT_NAME)"
@@ -87,7 +87,7 @@ $(VENV_PATH)/req-done: $(VENV_PATH) requirements.txt
 install: $(VENV_PATH)/req-done ## install dependencies for production
 	$(VENV_BIN)/$(PYTHON_COMMAND) -m $(PIP_COMMAND) install -e . $(PYPI_CMD)
 	install -d $(KEEPALIVED_EXPORTER_DIR)
-	install -m 644 $(PROJECT_NAME) $(KEEPALIVED_EXPORTER_DIR)
+	install -m 755 $(PROJECT_NAME) $(KEEPALIVED_EXPORTER_DIR)
 
 format: ## check formatting
 	$(VENV_BIN)/$(PYTHON_COMMAND) -m black --check app tests
@@ -98,3 +98,4 @@ scripts:
 	$(MAKE) -C $@ $(MAKECMDGOALS) -e
 
 .PHONY: all dep lint build clean format test install release scripts
+

@@ -4,7 +4,7 @@ main() {
     log_message ${LOG_LEVEL_DEBUG} "set capabilities to binary"
 
     # Give capabilities to signal keepalived, and read the output files
-    setcap "CAP_DAC_READ_SEARCH,CAP_KILL=+eip" ${KEEPALIVED_EXPORTER_ROOT_DIR}/keepalived-exporter
+    setcap "CAP_DAC_READ_SEARCH,CAP_KILL=+eip" /opt/ottopia/keepalived-exporter/keepalived-exporter
     local RET_VAL=$?
     if [ ${RET_VAL} -ne 0 ]
     then
