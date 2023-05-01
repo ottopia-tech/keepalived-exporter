@@ -1,4 +1,6 @@
 VERSION_FILE := version.txt
+export DESTDIR?=.
+export KEEPALIVED_EXPORTER_DIR=$(DESTDIR)/keepalived-exporter
 
 PROJECT_NAME := keepalived-exporter
 PKG := "github.com/ottopia-tech/$(PROJECT_NAME)"
@@ -34,8 +36,6 @@ endif
 
 RELEASE_FILENAME := $(PROJECT_NAME)-$(VERSION).linux-$(ARCH)
 
-.PHONY: all dep lint build clean format test install release
-
 all: dep build
 
 dep: ## Get the dependencies
@@ -49,7 +49,7 @@ endif
 lint: lintdeps ## to lint the files
 	$(LINTER) run --config=.golangci-lint.yml ./...
 
-build: $(VERSION_FILE) install ## Build the binary file
+build: $(VERSION_FILE) ## Build the binary file
 	@go build -o $(PROJECT_NAME) -v -ldflags="$(LD_FLAGS)" cmd/$(PROJECT_NAME)/main.go
 
 test:
@@ -59,6 +59,9 @@ clean: ## Remove previous build and release files
 	@rm -f $(PROJECT_NAME)
 	@rm -f $(RELEASE_FILENAME).zip
 	@rm -f $(RELEASE_FILENAME).tar.gz
+	@rm -f $(VERSION_FILE)
+	@rm -rf $(VENV_PATH)
+	@rm -rf $(KEEPALIVED_EXPORTER_DIR)
 
 release: build
 	@mkdir $(RELEASE_FILENAME)
@@ -73,7 +76,7 @@ $(VERSION_FILE): # Creates $(VERSION_FILE) file
 	@echo "COMMIT_HASH \"`git rev-parse --short HEAD`\"" >> $(VERSION_FILE)
 	@echo "BUILD_DATE_UTC \"`date -u +"%F %T %Z"`\"" >> $(VERSION_FILE)
 
-$(VENV_PATH):
+$(VENV_PATH): build
 	$(PYTHON_COMMAND)$(PYTHON_VER) -m venv $(VENV_PATH)
 	$(VENV_BIN)/$(PYTHON_COMMAND) -m $(PIP_COMMAND) install --upgrade $(PIP_COMMAND)
 
@@ -83,8 +86,15 @@ $(VENV_PATH)/req-done: $(VENV_PATH) requirements.txt
 
 install: $(VENV_PATH)/req-done ## install dependencies for production
 	$(VENV_BIN)/$(PYTHON_COMMAND) -m $(PIP_COMMAND) install -e . $(PYPI_CMD)
+	install -d $(KEEPALIVED_EXPORTER_DIR)
+	install -m 644 $(PROJECT_NAME) $(KEEPALIVED_EXPORTER_DIR)
 
 format: ## check formatting
 	$(VENV_BIN)/$(PYTHON_COMMAND) -m black --check app tests
 	$(VENV_BIN)/$(PYTHON_COMMAND) -m isort --profile black -c app tests
 
+install clean: scripts
+scripts:
+	$(MAKE) -C $@ $(MAKECMDGOALS) -e
+
+.PHONY: all dep lint build clean format test install release scripts

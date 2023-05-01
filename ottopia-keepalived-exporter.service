@@ -5,7 +5,7 @@ After=keepalived.service
 
 [Service]
 Type=simple
-User=ottopia-keepalived-exporter
+User=ottopia_keepalived
 WorkingDirectory=/opt/ottopia/keepalived-exporter
 ExecStart=/opt/ottopia/keepalived-exporter/keepalived-exporter -web.listen-address ":58084" -ka.json
 ExecStop=/bin/kill -TERM $MAINPID

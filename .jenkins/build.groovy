@@ -22,7 +22,7 @@ pipeline {
                 agent {
                     ecs {
                         inheritFrom 'large'
-                        image "633878423432.dkr.ecr.eu-central-1.amazonaws.com/${REPO_NAME}"
+                        image "633878423432.dkr.ecr.eu-central-1.amazonaws.com/jenkins_${REPO_NAME}:x86_64_ubuntu_focal"
                     }
                 }
                 options {
