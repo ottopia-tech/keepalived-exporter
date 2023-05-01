@@ -40,14 +40,14 @@ class StateFactory:
 
     @staticmethod
     def get_state(state: str) -> StateBase:
-        if state in states:
-            return states[state]()
+        if state in StateFactory.states:
+            return StateFactory.states[state]()
         else:
-            raise ValueError(f'Invalid state: {state}')
+            raise ValueError(f'Invalid state: {state}. State must be one of {StateFactory.states.keys()}')
 
     @staticmethod
     def register_state(state: str, state_class: StateBase):
-        states[state] = state_class
+        StateFactory.states[state] = state_class
 
 
 class StateBase:
@@ -55,13 +55,12 @@ class StateBase:
         self._name: str = f'KeepalivedState{state}'
         self._log: logging.Logger = logging.getLogger(self._name)
         self._logstash = LoggingFactory.get_logger(
-            module_name=self.name,
+            module_name=self._name,
             logging_settings=LoggerSetting(),
         )
         self.current_state: str = state
-        StateFactory.register_state(state.upper(), self)
 
-    def report(self, cls) -> int:
+    def report(self) -> int:
         self._log.info(f'Entering {self.current_state} state')
         self._logstash.info(f'Entering {self.current_state} state')
         return 0
@@ -231,10 +230,17 @@ def init_logging() -> logging.Logger:
     return logger
 
 
+def init_states():
+    StateFactory.register_state('MASTER', MasterState)
+    StateFactory.register_state('BACKUP', BackupState)
+    StateFactory.register_state('FAULT', FaultState)
+
+
 def main() -> int:
     logger = init_logging()
     logger.info('starting')
 
+    init_states()
     args: argparse.Namespace = get_arguments()
 
     state: StateBase = StateFactory.get_state(args.state.upper())
