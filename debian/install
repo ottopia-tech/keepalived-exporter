@@ -6,4 +6,3 @@ debian/postinst.d/14-python-packages.sh var/lib/dpkg/info/ottopia-keepalived-exp
 debian/postinst.d/utils/constants.sh var/lib/dpkg/info/ottopia-keepalived-exporter/postinst.d/utils
 debian/postinst.d/utils/logger.sh var/lib/dpkg/info/ottopia-keepalived-exporter/postinst.d/utils
 ottopia-keepalived-exporter.service lib/systemd/system
-venv/lib/python3.9/site-packages/ottopia_logging usr/lib/python3/dist-packages

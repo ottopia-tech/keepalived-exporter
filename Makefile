@@ -82,12 +82,14 @@ $(VENV_PATH): build
 
 $(VENV_PATH)/req-done: $(VENV_PATH) requirements.txt
 	$(VENV_BIN)/$(PYTHON_COMMAND) -m $(PIP_COMMAND) install -r requirements-dev.txt $(PYPI_CMD)
+	$(VENV_BIN)/$(PYTHON_COMMAND) -m $(PIP_COMMAND) download ottopia-logging $(PYPI_CMD)
 	@touch $@
 
 install: $(VENV_PATH)/req-done ## install dependencies for production
 	$(VENV_BIN)/$(PYTHON_COMMAND) -m $(PIP_COMMAND) install -e . $(PYPI_CMD)
 	install -d $(KEEPALIVED_EXPORTER_DIR)
 	install -m 755 $(PROJECT_NAME) $(KEEPALIVED_EXPORTER_DIR)
+	install -m 644 ottopia_logging-0.1.1*.whl $(KEEPALIVED_EXPORTER_DIR)
 
 format: ## check formatting
 	$(VENV_BIN)/$(PYTHON_COMMAND) -m black --check app tests
