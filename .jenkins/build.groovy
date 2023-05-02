@@ -15,6 +15,11 @@ pipeline {
     environment { 
         REPO_NAME = 'keepalived-exporter'
         BRANCH_NAME_NO_SLASHES = BRANCH_NAME.replace("/","_")
+
+        AWS_CREDS = 'jenkins-ecr-credentials'
+        AWS_ECR_REGION = 'eu-central-1'
+
+        PYPI_SERVER = credentials('jfrog-pypi-server')
     }
     
     stages {
