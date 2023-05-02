@@ -81,7 +81,7 @@ $(VENV_PATH): build
 	$(VENV_BIN)/$(PYTHON_COMMAND) -m $(PIP_COMMAND) install --upgrade $(PIP_COMMAND)
 
 $(VENV_PATH)/req-done: $(VENV_PATH) requirements.txt
-	$(VENV_BIN)/$(PYTHON_COMMAND) -m $(PIP_COMMAND) install -r requirements.txt $(PYPI_CMD)
+	$(VENV_BIN)/$(PYTHON_COMMAND) -m $(PIP_COMMAND) install -r requirements-dev.txt $(PYPI_CMD)
 	@touch $@
 
 install: $(VENV_PATH)/req-done ## install dependencies for production

@@ -39,16 +39,13 @@ pipeline {
                         steps {
                             sh '''
                                 dpkg-buildpackage -b -uc -ui
+                                mv ../*.deb .
                             '''
                         }
                     }
                     stage('deploy to jenkins') {
                         steps {
-                            sh '''
-                                tar cvfz keepalived-exporter.tar.gz keepalived-exporter
-                            '''
-
-                            archiveArtifacts artifacts: '*.tar.gz',
+                            archiveArtifacts artifacts: '*.deb',
                             fingerprint: true,
                             onlyIfSuccessful: true
                         }

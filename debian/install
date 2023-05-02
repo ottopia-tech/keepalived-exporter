@@ -2,12 +2,10 @@ debian/postinst.d/10-groups-creator.sh var/lib/dpkg/info/ottopia-keepalived-expo
 debian/postinst.d/11-user-creator.sh var/lib/dpkg/info/ottopia-keepalived-exporter/postinst.d
 debian/postinst.d/12-add-to-group.sh var/lib/dpkg/info/ottopia-keepalived-exporter/postinst.d
 debian/postinst.d/13-set-capabilities.sh var/lib/dpkg/info/ottopia-keepalived-exporter/postinst.d
+debian/postinst.d/14-python-packages.sh var/lib/dpkg/info/ottopia-keepalived-exporter/postinst.d
 debian/postinst.d/utils/constants.sh var/lib/dpkg/info/ottopia-keepalived-exporter/postinst.d/utils
 debian/postinst.d/utils/logger.sh var/lib/dpkg/info/ottopia-keepalived-exporter/postinst.d/utils
 ottopia-keepalived-exporter.service lib/systemd/system
 venv/lib/python3.9/site-packages/ottopia_logging usr/lib/python3/dist-packages
-venv/lib/python3.9/site-packages/colorlog usr/lib/python3/dist-packages
-venv/lib/python3.9/site-packages/logstash usr/lib/python3/dist-packages
-venv/lib/python3.9/site-packages/pydantic usr/lib/python3/dist-packages
-venv/lib/python3.9/site-packages/typing_extensions.py usr/lib/python3/dist-packages
+requirements.txt usr/share/ottopia-keepalived-exporter
 

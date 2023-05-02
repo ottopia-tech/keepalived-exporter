@@ -12,5 +12,5 @@ Package: ottopia-keepalived-exporter
 #Version: 0.5.0-1
 Architecture: any
 Description: Communicating the status and metrics of Keepalived to Prometheus
-Depends: keepalived
+Depends: keepalived, python3.9
 

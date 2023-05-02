@@ -18,7 +18,7 @@ setup_device_ip() {
 report_reliability_metrics() {
     local -r cur_dir=$(dirname $(realpath $0))
 
-    ${cur_dir}/reliability_metrics.sh ${mode}
+    ${cur_dir}/reliability_metrics.py ${mode}
 }
 
 main() {
