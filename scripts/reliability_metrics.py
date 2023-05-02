@@ -7,6 +7,8 @@ import queue
 import re
 import argparse
 from builtins import staticmethod
+import docker
+import docker.models.containers
 
 from ottopia_logging.logging_factory import LoggingFactory
 from ottopia_logging.log_level import LogLevel
@@ -78,7 +80,12 @@ class Service:
     def find(self):
         fail_line: str = f'{self.name}.service: Main process exited, code=exited, status=1/FAILURE'
         while not self.event.is_set() or not self.queue.empty():
-            line_data: LineData = self.queue.get()
+            self._log.debug('getting line from queue')
+            try:
+                line_data: LineData = self.queue.get(timeout=0.1)
+                self._log.debug(f'got line from queue, queue size:: {self.queue.qsize()}')
+            except queue.Empty:
+                continue
             if line_data and fail_line in line_data.line:
                 self.report_to_logstash(line_data.syslog_date, fail_line)
 
@@ -102,9 +109,40 @@ class Service:
         self.queue.put(line_data)
 
 
+class Container:
+    def __init__(self, name: str):
+        self.name = name
+        self.container: docker.models.containers.Container = None
+        self.thread = threading.Thread(group=None, target=self.async_analyze)
+        self._log = get_logger(f'{self.name}')
+        self._logstash = LoggingFactory.get_logger(
+            module_name=self.name,
+            logging_settings=LoggerSetting(),
+        )
+
+    def report_to_logstash(self, status: str):
+        self._logstash.info(f'container {self.name} is not running. Status: {status}')
+
+    def start(self):
+        self._log.info('starting container')
+        self.thread.start()
+
+    def stop(self):
+        self._log.info('stopping container')
+        self.thread.join()
+
+    def async_analyze(self):
+        client: docker.client.DockerClient = docker.from_env()
+        self.container: docker.models.containers.Container = client.containers.get(self.name)
+        self._log.debug(f'self.container is none: {self.container is None}')
+        if self.container and self.container.status != 'running':
+            self.report_to_logstash(self.container.status)
+
+
 class FaultState(StateBase):
     SYSLOG_PATH: str = '/var/log/syslog'
     SERVICE_NAMES: list[str] = ['tca', 'relayserver']
+    CONTAINER_NAMES: list[str] = ['assistance-session-manager', 'connection-manager', 'station-manager']
 
     def __init__(self):
         super().__init__('Fault')
@@ -114,6 +152,7 @@ class FaultState(StateBase):
 
         self.event: threading.Event = threading.Event()
         self.services: list[Service] = [Service(service_name, self.event) for service_name in FaultState.SERVICE_NAMES]
+        self.containers: list[Container] = [Container(f'tca-{container_name}-1') for container_name in FaultState.CONTAINER_NAMES]
 
     def put_chunk_lines_on_queue(self, chunk: str) -> bool:
         '''
@@ -159,6 +198,9 @@ class FaultState(StateBase):
         if not os.path.exists(self.SYSLOG_PATH):
             return 2
 
+        for service in self.services:
+            service.start()
+
         MAX_CHUNK_SIZE = 0x1000
         try:
             prev_chunk_remainder: str = ''
@@ -180,17 +222,29 @@ class FaultState(StateBase):
             self._log.exception(e)
             return 1
 
+        finally:
+            self._log.debug('stopping services')
+            self.event.set()
+            for service in self.services:
+                service.stop()
+
         return 0
+
+    def search_for_containers_errors(self):
+        '''
+        search for containers errors
+        '''
+
+        for container in self.containers:
+            container.start()
+        for container in self.containers:
+            container.stop()
 
     def report(self) -> int:
         super().report()
 
-        for service in self.services:
-            service.start()
         ret_val: int = self.search_for_services_errors()
-        self.event.set()
-        for service in self.services:
-            service.stop()
+        self.search_for_containers_errors()
 
         return ret_val
 

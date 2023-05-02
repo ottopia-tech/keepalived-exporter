@@ -29,3 +29,5 @@ conan_imports_manifest.txt
 ignore
 keepalived-exporter
 version.txt
+*.whl
+python-logstash-0.4.8.tar.gz
