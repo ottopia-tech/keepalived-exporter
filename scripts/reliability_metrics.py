@@ -32,25 +32,6 @@ class LoggerSetting(LoggingSettings):
 
 
 class StateBase:
-    pass
-
-
-class StateFactory:
-    states: dict = {}
-
-    @staticmethod
-    def get_state(state: str) -> StateBase:
-        if state in StateFactory.states:
-            return StateFactory.states[state]()
-        else:
-            raise ValueError(f'Invalid state: {state}. State must be one of {StateFactory.states.keys()}')
-
-    @staticmethod
-    def register_state(state: str, state_class: StateBase):
-        StateFactory.states[state] = state_class
-
-
-class StateBase:
     def __init__(self, state: str):
         self._name: str = f'KeepalivedState{state}'
         self._log: logging.Logger = get_logger(self._name)
@@ -214,6 +195,28 @@ class FaultState(StateBase):
         return ret_val
 
 
+class StateFactory:
+    states: dict = {}
+
+    @staticmethod
+    def get_state(state: str) -> StateBase:
+        if state in StateFactory.states:
+            return StateFactory.states[state]()
+        else:
+            raise ValueError(f'Invalid state: {state}. State must be one of {StateFactory.states.keys()}')
+
+    @staticmethod
+    def register_state(state: str, state_class: StateBase):
+        StateFactory.states[state] = state_class
+
+    @staticmethod
+    def init_states():
+        StateFactory.register_state('MASTER', MasterState)
+        StateFactory.register_state('BACKUP', BackupState)
+        StateFactory.register_state('FAULT', FaultState)
+
+
+
 def get_arguments() -> argparse.Namespace:
     parser: argparse.ArgumentParser = argparse.ArgumentParser(description='find services errors in syslog')
     parser.add_argument('state', choices=['MASTER', 'BACKUP', 'FAULT'], help='state of the machine')
@@ -232,19 +235,13 @@ def get_logger(name: str) -> logging.Logger:
     return logger
 
 
-def init_states():
-    StateFactory.register_state('MASTER', MasterState)
-    StateFactory.register_state('BACKUP', BackupState)
-    StateFactory.register_state('FAULT', FaultState)
-
-
 def main() -> int:
     logger = get_logger(__name__)
     logger.info('starting')
 
-    init_states()
     args: argparse.Namespace = get_arguments()
 
+    StateFactory.init_states()
     state: StateBase = StateFactory.get_state(args.state.upper())
     ret_val: int = state.report()
 
