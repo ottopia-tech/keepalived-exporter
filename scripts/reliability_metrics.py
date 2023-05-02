@@ -53,7 +53,7 @@ class StateFactory:
 class StateBase:
     def __init__(self, state: str):
         self._name: str = f'KeepalivedState{state}'
-        self._log: logging.Logger = logging.getLogger(self._name)
+        self._log: logging.Logger = get_logger(self._name)
         self._logstash = LoggingFactory.get_logger(
             module_name=self._name,
             logging_settings=LoggerSetting(),
@@ -61,7 +61,6 @@ class StateBase:
         self.current_state: str = state
 
     def report(self) -> int:
-        self._log.info(f'Entering {self.current_state} state')
         self._logstash.info(f'Entering {self.current_state} state')
         return 0
 
@@ -89,7 +88,7 @@ class Service:
         self.event = event
         self.queue = queue.Queue()
         self.thread = threading.Thread(group=None, target=self.find)
-        self._log = logging.getLogger(f'{self.name}')
+        self._log = get_logger(f'{self.name}')
         self._logstash = LoggingFactory.get_logger(
             module_name=self.name,
             logging_settings=LoggerSetting(),
@@ -216,16 +215,19 @@ class FaultState(StateBase):
 
 
 def get_arguments() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description='find services errors in syslog')
+    parser: argparse.ArgumentParser = argparse.ArgumentParser(description='find services errors in syslog')
     parser.add_argument('state', choices=['MASTER', 'BACKUP', 'FAULT'], help='state of the machine')
     return parser.parse_args()
 
 
-def init_logging() -> logging.Logger:
-    log_file_name: str = os.path.basename(__file__).split('.')[0]
-    logging.basicConfig(filename=f'{log_file_name}.log', format='[%(asctime)s] [%(levelname)s] [%(name)s] [%(funcName)s:%(lineno)d] %(message)s', filemode='w', level=logging.INFO)
-    logger = logging.getLogger(__name__)
-    logger.addHandler(logging.StreamHandler())
+def get_logger(name: str) -> logging.Logger:
+    log_file_name: str = os.path.basename(__file__).split('.')[0] + '.log'
+    formatter: logging.Formatter = logging.Formatter('[%(asctime)s] [%(levelname)s] [%(name)s] [%(funcName)s:%(lineno)d] %(message)s')
+    handler: logging.Handler = logging.handlers.RotatingFileHandler(log_file_name, maxBytes=0x10000,
+                                  backupCount=10)
+    handler.setFormatter(formatter)
+    logger = logging.getLogger(name)
+    logger.addHandler(handler)
 
     return logger
 
@@ -237,7 +239,7 @@ def init_states():
 
 
 def main() -> int:
-    logger = init_logging()
+    logger = get_logger(__name__)
     logger.info('starting')
 
     init_states()
