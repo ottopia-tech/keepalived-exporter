@@ -92,7 +92,7 @@ class Utils:
         if Utils.handler is not None:
             return Utils.handler
 
-        file_name: str = f'/tmp/{os.path.basename(__file__).split(".")[0]}.log'
+        file_name: str = f'{os.path.sep}'.join(('', 'tmp', os.path.splitext(os.path.basename(__file__))[0] + '.log'))
         formatter: logging.Formatter = logging.Formatter('[%(asctime)s] [%(levelname)s] [%(name)s] [%(thread)d] [%(funcName)s:%(lineno)d] %(message)s')
         Utils.handler: logging.Handler = logging.handlers.RotatingFileHandler(file_name, maxBytes=0x10000,
                                       backupCount=10)
