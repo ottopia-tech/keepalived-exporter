@@ -83,7 +83,7 @@ class Utils:
         if Utils.args is not None:
             return Utils.args
         parser: argparse.ArgumentParser = argparse.ArgumentParser(description='find services errors in syslog')
-        parser.add_argument('state', choices=['MASTER', 'BACKUP', 'FAULT'], help='state of the machine')
+        parser.add_argument('state', required=True, choices=['MASTER', 'BACKUP', 'FAULT'], help='state of the machine')
         Utils.args = parser.parse_args()
         return Utils.args
 
@@ -137,12 +137,6 @@ def main() -> int:
 
     logger.info('done')
     return 0
-
-
-#import unittest
-# write unit tests for each function in this module
-#def test_search_for_services_errors():
-#    pass
 
 
 if __name__ == "__main__":
