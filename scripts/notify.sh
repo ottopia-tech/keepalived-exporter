@@ -7,12 +7,9 @@ set_variables() {
 }
 
 setup_device_ip() {
-    if [ "${mode}" == "MASTER" ]
-    then
-        ip address del ${backup_address}/24 dev ${internet_device}
-    else
-        ip address add ${backup_address}/24 dev ${internet_device}
-    fi
+    local -r cur_dir=$(dirname $(realpath $0))
+
+    ${cur_dir}/../interface ${internet_device} ${backup_address} ${mode}
 }
 
 report_reliability_metrics() {
