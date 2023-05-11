@@ -3,9 +3,11 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include "ilogger.h"
 #include "interface_addresses.h"
 
-InterfaceAddresses::InterfaceAddresses(const std::string& name) :
+InterfaceAddresses::InterfaceAddresses(const std::string& name, std::shared_ptr<ILogger> logger) :
+        m_logger(logger),
         m_name(name),
         m_ifaddr(nullptr)
 {
@@ -14,6 +16,7 @@ InterfaceAddresses::InterfaceAddresses(const std::string& name) :
         perror("getifaddrs");
         freeifaddrs(m_ifaddr);
         m_ifaddr = nullptr;
+        LOG_ERROR(m_logger, "getifaddrs failed");
     }
 }
 
@@ -28,6 +31,7 @@ bool InterfaceAddresses::ipAddressExists(const std::string& ipAddress)
     ifaddrs* ifa;
     if (m_ifaddr == nullptr)
     {
+        LOG_ERROR(m_logger, "m_ifaddr is nullptr");
         return false;
     }
 

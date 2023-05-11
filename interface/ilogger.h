@@ -31,6 +31,6 @@ public:
 };
 
 #define LOG(logger, message) logger->log(message)
-#define LOG_ERROR(logger, message) logger->log(ILogger::LogLevel::Error, __PRETTY_FUNCTION__, __LINE__, message)
-#define LOG_INFO(logger, message) logger->log(ILogger::LogLevel::Info, __PRETTY_FUNCTION__, __LINE__, message)
-#define LOG_DEBUG(logger, message) logger->log(ILogger::LogLevel::Debug, __PRETTY_FUNCTION__, __LINE__, message)
+#define LOG_ERROR(logger, message) (logger)->log(ILogger::LogLevel::Error, __PRETTY_FUNCTION__, __LINE__, (message))
+#define LOG_INFO(logger, message) (logger)->log(ILogger::LogLevel::Info, __PRETTY_FUNCTION__, __LINE__, (message))
+#define LOG_DEBUG(logger, message) (logger)->log(ILogger::LogLevel::Debug, __PRETTY_FUNCTION__, __LINE__, (message))

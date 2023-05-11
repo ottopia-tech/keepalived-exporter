@@ -34,14 +34,14 @@ int main(int argc, char* argv[])
     const std::string ip_addr = argv[2];
 
     auto logger = ClassFactory::Get().CreateFileLogger(program_name);
-    NetworkInterface network_interface(iface);
+    NetworkInterface network_interface(iface, logger);
     if (mode == "MASTER")
     {
-        network_interface.deleteIpAddress(ip_addr, logger);
+        network_interface.deleteIpAddress(ip_addr);
     }
     else
     {
-        network_interface.addIpAddress(ip_addr, logger);
+        network_interface.addIpAddress(ip_addr);
     }
 
     return 0;

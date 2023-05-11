@@ -11,7 +11,8 @@
 #include "ilogger.h"
 #include "interface_addresses.h"
 
-NetworkInterface::NetworkInterface(const std::string& name) :
+NetworkInterface::NetworkInterface(const std::string& name, std::shared_ptr<ILogger> logger) :
+        m_logger(logger),
         m_name(name)
 {
     m_fd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -25,13 +26,13 @@ NetworkInterface::~NetworkInterface()
     }
 }
 
-bool NetworkInterface::addIpAddress(const std::string& ipAddress, std::shared_ptr<ILogger> logger)
+bool NetworkInterface::addIpAddress(const std::string& ipAddress)
 {
     if (m_fd < 0)
     {
         std::string message = "socket fd is negative: " + std::to_string(m_fd);
-        LOG_ERROR(logger, message);
         perror("socket");
+        LOG_ERROR(m_logger, message);
         return false;
     }
     sockaddr_in sin;
@@ -48,31 +49,31 @@ bool NetworkInterface::addIpAddress(const std::string& ipAddress, std::shared_pt
     if (ret_val < 0)
     {
         std::string message = "ioctl SIOCSIFADDR, ret_val: " + std::to_string(ret_val);
-        LOG_ERROR(logger, message);
+        LOG_ERROR(m_logger, message);
         return false;
     }
 
     std::string message = "successfully added ip: " + ipAddress + " on interface: " + m_name;
-    LOG_INFO(logger, message);
+    LOG_INFO(m_logger, message);
     return true;
 }
 
-bool NetworkInterface::deleteIpAddress(const std::string& ipAddress, std::shared_ptr<ILogger> logger)
+bool NetworkInterface::deleteIpAddress(const std::string& ipAddress)
 {
     if (m_fd < 0)
     {
         std::string message = "socket fd is negative: " + std::to_string(m_fd);
-        LOG_ERROR(logger, message);
         perror("socket");
+        LOG_ERROR(m_logger, message);
         return false;
     }
 
-    InterfaceAddresses interfaceAddresses(m_name);
+    InterfaceAddresses interfaceAddresses(m_name, m_logger);
     // Check if the IP address exists on the interface
     if (!interfaceAddresses.ipAddressExists(ipAddress))
     {
         std::string message = "Error: IP address " + ipAddress + " not found on interface " + m_name;
-        LOG_ERROR(logger, message);
+        LOG_ERROR(m_logger, message);
         return false;
     }
 
@@ -92,11 +93,11 @@ bool NetworkInterface::deleteIpAddress(const std::string& ipAddress, std::shared
     if (ret_val < 0)
     {
         std::string message = "ioctl SIOCSIFADDR, ret_val: " + std::to_string(ret_val);
-        LOG_ERROR(logger, message);
+        LOG_ERROR(m_logger, message);
         return false;
     }
 
     std::string message = "successfully deleted ip: " + ipAddress + " on interface: " + m_name;
-    LOG_INFO(logger, message);
+    LOG_INFO(m_logger, message);
     return true;
 }
