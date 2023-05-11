@@ -23,7 +23,7 @@ InterfaceAddresses::~InterfaceAddresses()
     m_ifaddr = nullptr;
 }
 
-bool InterfaceAddresses::ipAddressExists(const char* ipAddress)
+bool InterfaceAddresses::ipAddressExists(const std::string& ipAddress)
 {
     ifaddrs* ifa;
     if (m_ifaddr == nullptr)
@@ -41,7 +41,7 @@ bool InterfaceAddresses::ipAddressExists(const char* ipAddress)
 
         sockaddr_in* addr = (sockaddr_in*) ifa->ifa_addr;
         std::string address = inet_ntoa(addr->sin_addr);
-        if (strcmp(inet_ntoa(addr->sin_addr), ipAddress) == 0)
+        if (strcmp(inet_ntoa(addr->sin_addr), ipAddress.c_str()) == 0)
         {
             return true;
         }

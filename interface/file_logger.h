@@ -10,7 +10,7 @@ class FileLogger : public ILogger
 public:
     FileLogger(const std::string& filename);
 
-    void log(const std::string& message) override;
+    void log(LogLevel level, const std::string& function, int line, const std::string& message) override;
 
 private:
     std::string m_filename;

@@ -11,7 +11,7 @@ class InterfaceAddresses
 public:
     InterfaceAddresses(const std::string& name);
     ~InterfaceAddresses();
-    bool ipAddressExists(const char* ipAddress);
+    bool ipAddressExists(const std::string& ipAddress);
 
 private:
     std::string m_name;

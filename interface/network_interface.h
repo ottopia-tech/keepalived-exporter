@@ -13,9 +13,9 @@ public:
 
     ~NetworkInterface();
 
-    bool addIpAddress(const char* ipAddress, int prefixLen, std::shared_ptr<ILogger> logger);
+    bool addIpAddress(const std::string& ipAddress, std::shared_ptr<ILogger> logger);
 
-    bool deleteIpAddress(const char* ipAddress, std::shared_ptr<ILogger> logger);
+    bool deleteIpAddress(const std::string& ipAddress, std::shared_ptr<ILogger> logger);
 
 private:
     std::string m_name;

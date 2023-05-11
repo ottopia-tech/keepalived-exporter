@@ -7,7 +7,7 @@
 #include "network_interface.h"
 
 
-void print_usage(char* program_name)
+void print_usage(const std::string& program_name)
 {
     std::cerr << "Usage: " << program_name << " interface ip_address keepalived_state" << std::endl
               << "interface: a required argument" << std::endl << "ip_address: a required argument" << std::endl
@@ -16,32 +16,32 @@ void print_usage(char* program_name)
 
 int main(int argc, char* argv[])
 {
-    char* program_name = argv[0];
+    const std::string program_name = argv[0];
     if (argc < 4)
     {
         print_usage(program_name);
         return 1;
     }
 
-    char* mode = argv[argc - 1];
-    if (strcmp(mode, "FAULT") != 0 && strcmp(mode, "BACKUP") != 0 && strcmp(mode, "MASTER") != 0)
+    const std::string mode = argv[argc - 1];
+    if ((mode != "FAULT") && (mode != "BACKUP") && (mode != "MASTER"))
     {
         print_usage(program_name);
         return 1;
     }
 
-    char* ip_addr = argv[argc - 2];
-    char* iface = argv[argc - 3];
+    const std::string iface = argv[1];
+    const std::string ip_addr = argv[2];
 
     auto logger = ClassFactory::Get().CreateFileLogger(program_name);
     NetworkInterface network_interface(iface);
-    if (strcmp(mode, "MASTER") == 0)
+    if (mode == "MASTER")
     {
         network_interface.deleteIpAddress(ip_addr, logger);
     }
     else
     {
-        network_interface.addIpAddress(ip_addr, 24, logger);
+        network_interface.addIpAddress(ip_addr, logger);
     }
 
     return 0;
