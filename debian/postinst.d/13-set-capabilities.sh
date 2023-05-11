@@ -1,7 +1,7 @@
 #!/bin/bash
 
-main() {
-    log_message ${LOG_LEVEL_DEBUG} "set capabilities to binary"
+keepalived-exporter-capabilities() {
+    log_message ${LOG_LEVEL_DEBUG} "set capabilities to keepalived-exporter binary"
 
     # Give capabilities to signal keepalived, and read the output files
     setcap "CAP_DAC_READ_SEARCH,CAP_KILL=+eip" /opt/ottopia/keepalived-exporter/keepalived-exporter
@@ -15,8 +15,8 @@ main() {
     log_message ${LOG_LEVEL_DEBUG} "Done set capabilities to binary"
 }
 
-main() {
-    log_message ${LOG_LEVEL_DEBUG} "set capabilities to binary"
+interface-capabilities() {
+    log_message ${LOG_LEVEL_DEBUG} "set capabilities to interface binary"
 
     # Give capabilities to signal keepalived, and read the output files
     setcap "CAP_NET_ADMIN,CAP_NET_RAW+ep" /opt/ottopia/keepalived-exporter/interface
@@ -28,6 +28,15 @@ main() {
     fi
 
     log_message ${LOG_LEVEL_DEBUG} "Done set capabilities to binary"
+}
+
+main() {
+    log_message ${LOG_LEVEL_DEBUG} "set capabilities to binaries"
+
+    interface-capabilities
+    keepalived-exporter-capabilities
+
+    log_message ${LOG_LEVEL_DEBUG} "Done set capabilities to binaries"
 }
 
 main

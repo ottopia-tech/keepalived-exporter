@@ -49,12 +49,15 @@ endif
 lint: lintdeps ## to lint the files
 	$(LINTER) run --config=.golangci-lint.yml ./...
 
+build clean: interface
 interface:
-	@mkdir interface/build
-	@cd interface/build && cmake ..
-	$(MAKE) -C interface
+	mkdir -p interface/build
+	cd interface
+	cmake -S ./interface -B ./interface/build
+#	cmake --build ./interface/build
+	$(MAKE) -C interface/build $(MAKECMDGOALS)
 
-build: interface $(VERSION_FILE) ## Build the binary file
+build: $(VERSION_FILE) ## Build the binary file
 	@go build -o $(PROJECT_NAME) -v -ldflags="$(LD_FLAGS)" cmd/$(PROJECT_NAME)/main.go
 
 test:
@@ -104,5 +107,5 @@ install clean: scripts
 scripts:
 	$(MAKE) -C $@ $(MAKECMDGOALS) -e
 
-.PHONY: all dep lint build clean format test install release scripts
+.PHONY: all dep lint build clean format test install release scripts interface
 

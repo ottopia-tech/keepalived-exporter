@@ -25,9 +25,10 @@ NetworkInterface::~NetworkInterface()
     }
 }
 
-bool NetworkInterface::addIpAddress(const char* ipAddress, int prefixLen, std::shared_ptr <ILogger> logger)
+bool NetworkInterface::addIpAddress(const char* ipAddress, int prefixLen, std::shared_ptr<ILogger> logger)
 {
-    if (m_fd < 0) {
+    if (m_fd < 0)
+    {
         perror("socket");
         return false;
     }
@@ -42,7 +43,8 @@ bool NetworkInterface::addIpAddress(const char* ipAddress, int prefixLen, std::s
 
     memcpy(&ifr.ifr_addr, &sin, sizeof(sockaddr));
     int ret_val = ioctl(m_fd, SIOCSIFADDR, &ifr);
-    if (ret_val < 0) {
+    if (ret_val < 0)
+    {
         std::string message = "ioctl SIOCSIFADDR, ret_val: " + std::to_string(ret_val);
         logger->log(message);
         return false;
@@ -51,16 +53,18 @@ bool NetworkInterface::addIpAddress(const char* ipAddress, int prefixLen, std::s
     return true;
 }
 
-bool NetworkInterface::deleteIpAddress(const char* ipAddress, std::shared_ptr <ILogger> logger)
+bool NetworkInterface::deleteIpAddress(const char* ipAddress, std::shared_ptr<ILogger> logger)
 {
-    if (m_fd < 0) {
+    if (m_fd < 0)
+    {
         perror("socket");
         return false;
     }
 
     InterfaceAddresses interfaceAddresses(m_name);
     // Check if the IP address exists on the interface
-    if (!interfaceAddresses.ipAddressExists(ipAddress)) {
+    if (!interfaceAddresses.ipAddressExists(ipAddress))
+    {
         std::string message = "Error: IP address " + std::string(ipAddress) + " not found on interface " + m_name;
         logger->log(message);
         return false;
@@ -79,7 +83,8 @@ bool NetworkInterface::deleteIpAddress(const char* ipAddress, std::shared_ptr <I
 
     // Delete IP address from interface
     int ret_val = ioctl(m_fd, SIOCSIFADDR, &ifr);
-    if (ret_val < 0) {
+    if (ret_val < 0)
+    {
         std::string message = "ioctl SIOCSIFADDR, ret_val: " + std::to_string(ret_val);
         logger->log(message);
         return false;

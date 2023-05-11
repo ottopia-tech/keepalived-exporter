@@ -10,30 +10,30 @@
 void print_usage(char* program_name)
 {
     std::cerr << "Usage: " << program_name << " interface ip_address keepalived_state" << std::endl
-        << "interface: a required argument" << std::endl
-        << "ip_address: a required argument" << std::endl
-        << "keepalived_state: must be one of FAULT, BACKUP, MASTER" << std::endl;
+              << "interface: a required argument" << std::endl << "ip_address: a required argument" << std::endl
+              << "keepalived_state: must be one of FAULT, BACKUP, MASTER" << std::endl;
 }
 
 int main(int argc, char* argv[])
 {
+    char* program_name = argv[0];
     if (argc < 4)
     {
-        print_usage(argv[0]);
+        print_usage(program_name);
         return 1;
     }
 
     char* mode = argv[argc - 1];
     if (strcmp(mode, "FAULT") != 0 && strcmp(mode, "BACKUP") != 0 && strcmp(mode, "MASTER") != 0)
     {
-        print_usage(argv[0]);
+        print_usage(program_name);
         return 1;
     }
 
     char* ip_addr = argv[argc - 2];
     char* iface = argv[argc - 3];
 
-    auto logger = ClassFactory::Get().CreateFileLogger();
+    auto logger = ClassFactory::Get().CreateFileLogger(program_name);
     NetworkInterface network_interface(iface);
     if (strcmp(mode, "MASTER") == 0)
     {

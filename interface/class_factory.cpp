@@ -13,11 +13,11 @@ const ClassFactory& ClassFactory::Get()
     return *m_instance;
 }
 
-std::shared_ptr<ILogger> ClassFactory::CreateFileLogger() const
+std::shared_ptr<ILogger> ClassFactory::CreateFileLogger(const std::string& file_name) const
 {
     if (m_logger == nullptr)
     {
-        m_logger = std::make_shared<FileLogger>("/tmp/log.txt");
+        m_logger = std::make_shared<FileLogger>("/tmp/" + file_name + ".log");
     }
 
     return m_logger;

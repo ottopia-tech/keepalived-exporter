@@ -11,4 +11,6 @@ list(APPEND SOURCES
         interface_addresses.cpp
 )
 
-add_executable(interface ${SOURCES})
+message(STATUS "PROJECT: ${CMAKE_PROJECT_NAME}")
+add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
+install(TARGETS ${CMAKE_PROJECT_NAME} DESTINATION /opt/ottopia/keepalived-exporter)

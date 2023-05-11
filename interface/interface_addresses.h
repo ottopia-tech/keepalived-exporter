@@ -3,6 +3,7 @@
 #include <string>
 
 struct ifaddrs;
+
 class ILogger;
 
 class InterfaceAddresses

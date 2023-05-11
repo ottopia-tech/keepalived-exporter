@@ -3,8 +3,11 @@
 #include <string>
 
 // Interface for logging messages
-class ILogger {
+class ILogger
+{
 public:
     virtual void log(const std::string& message) = 0;
-    virtual ~ILogger() {}
+    virtual ~ILogger()
+    {
+    }
 };

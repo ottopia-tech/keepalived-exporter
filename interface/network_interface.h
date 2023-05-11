@@ -6,7 +6,8 @@
 class ILogger;
 
 // Class for managing network interfaces
-class NetworkInterface {
+class NetworkInterface
+{
 public:
     NetworkInterface(const std::string& name);
 
