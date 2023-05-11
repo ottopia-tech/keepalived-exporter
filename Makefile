@@ -54,9 +54,7 @@ clean: interface
 install: interface
 interface:
 	mkdir -p interface/build
-	cd interface
 	cmake -S ./interface -B ./interface/build
-#	cmake --build ./interface/build
 	$(MAKE) -C interface/build $(MAKECMDGOALS)
 
 build: $(VERSION_FILE) ## Build the binary file
