@@ -49,7 +49,9 @@ endif
 lint: lintdeps ## to lint the files
 	$(LINTER) run --config=.golangci-lint.yml ./...
 
-build clean: interface
+build: interface
+clean: interface
+install: interface
 interface:
 	mkdir -p interface/build
 	cd interface
