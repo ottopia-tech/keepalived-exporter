@@ -6,7 +6,7 @@ set_variables() {
     readonly backup_address=$1
     shift
     # if number of remaining arguments is greater than 3
-    if [ $# -gt 3 ]
+    if [ $# -gt 4 ]
     then
         readonly netmask=$1
         shift
@@ -15,8 +15,8 @@ set_variables() {
         shift
     done
     readonly instance=$1
-    readonly priority=$2
-    readonly mode=$3
+    readonly mode=$2
+    readonly priority=$3
 }
 
 setup_device_ip() {
