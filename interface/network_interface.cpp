@@ -50,7 +50,7 @@ bool NetworkInterface::AddIpAddress(const std::string& ipAddress, const std::str
     {
         return false;
     }
-    LOG_INFO(m_logger, "successfully set ip: " + ipAddress + " on interface: " + m_name);
+    LOG_INFO(m_logger, "Successfully set ip: " + ipAddress + " on interface: " + m_name);
 
     if (!set_netmask(netmask_bin))
     {
