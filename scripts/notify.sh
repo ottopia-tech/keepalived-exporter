@@ -37,4 +37,4 @@ main() {
     report_reliability_metrics
 }
 
-main @
+main $@
