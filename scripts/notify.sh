@@ -2,14 +2,29 @@
 
 set_variables() {
     readonly internet_device=$1
-    readonly backup_address=$2
+    shift
+    readonly backup_address=$1
+    shift
+    # if number of remaining arguments is greater than 3
+    if [ $# -gt 3 ]
+    then
+        readonly netmask=$1
+        shift
+    else
+        readonly netmask="255.255.255.0"
+    fi
+    while [ $# -gt 3 ]; do
+        shift
+    done
+    readonly instance=$1
+    readonly priority=$2
     readonly mode=$3
 }
 
 setup_device_ip() {
     local -r cur_dir=$(dirname $(realpath $0))
 
-    ${cur_dir}/../interface ${internet_device} ${backup_address} ${mode}
+    ${cur_dir}/../interface ${internet_device} ${backup_address} ${netmask} ${instance} ${priority} ${mode}
 }
 
 report_reliability_metrics() {
@@ -24,4 +39,4 @@ main() {
     report_reliability_metrics
 }
 
-main $1 $2 $5
+main @
