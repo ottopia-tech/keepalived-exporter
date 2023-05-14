@@ -10,8 +10,6 @@ set_variables() {
     then
         readonly netmask=$1
         shift
-    else
-        readonly netmask="255.255.255.0"
     fi
     while [ $# -gt 3 ]; do
         shift
