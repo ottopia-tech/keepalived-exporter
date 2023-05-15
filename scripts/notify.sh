@@ -3,15 +3,18 @@
 set_variables() {
     readonly internet_device=$1
     readonly backup_address=$2
-    readonly mode=$3
+    readonly gw=$3
+    readonly mode=$6
 }
 
 setup_device_ip() {
     if [ "${mode}" == "MASTER" ]
     then
+	ip route del default via ${gw} src ${backup_address} dev ${internet_device}
         ip address del ${backup_address}/24 dev ${internet_device}
     else
         ip address add ${backup_address}/24 dev ${internet_device}
+	ip route add default via ${gw} src ${backup_address} dev ${internet_device}
     fi
 }
 
@@ -27,4 +30,4 @@ main() {
     report_reliability_metrics
 }
 
-main $1 $2 $5
+main $@
