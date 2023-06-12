@@ -1,3 +1,9 @@
+ottopia-keepalived-exporter (0.5.2) unstable; urgency=medium
+
+  * Bump version
+
+ -- Damir Bar <damir@damir-Precision-5560>  Mon, 12 Jun 2023 09:57:00 +0300
+
 ottopia-keepalived-exporter (0.5.1) unstable; urgency=medium
 
   * Bump version
