@@ -1,14 +1,20 @@
+ottopia-keepalived-exporter (0.5.3) unstable; urgency=medium
+
+  * Bump version
+
+ -- Noam Barkaee <noamb@ottopia.tech>  Sat, 15 Jul 2023 19:25:43 +0300
+
 ottopia-keepalived-exporter (0.5.2) unstable; urgency=medium
 
   * Bump version
 
- -- Damir Bar <damir@damir-Precision-5560>  Mon, 12 Jun 2023 09:57:00 +0300
+ -- Damir Bar <damirb@ottopia.tech>  Mon, 12 Jun 2023 09:57:00 +0300
 
 ottopia-keepalived-exporter (0.5.1) unstable; urgency=medium
 
   * Bump version
 
- -- Noam Barkaee <noam@silver-surfer>  Thu, 04 May 2023 14:45:08 +0300
+ -- Noam Barkaee <noamb@ottopia.tech>  Thu, 04 May 2023 14:45:08 +0300
 
 ottopia-keepalived-exporter (0.5.0-1) unstable; urgency=medium
 
