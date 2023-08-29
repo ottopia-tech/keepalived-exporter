@@ -3,7 +3,7 @@
 set_variables() {
     readonly internet_device=$1
     readonly backup_address=$2
-    readonly internet_subnet = $3 
+    readonly internet_subnet=$3 
     readonly gw=$4
     readonly mode=$7
 }
