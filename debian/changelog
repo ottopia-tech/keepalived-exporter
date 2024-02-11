@@ -1,3 +1,9 @@
+ottopia-keepalived-exporter (0.5.9) unstable; urgency=medium
+
+  * Bump version 0.5.9
+
+ -- Noam Barkaee <noamb@ottopia.tech>  Sun, 11 Feb 2024 14:36:38 +0200
+
 ottopia-keepalived-exporter (0.5.5) unstable; urgency=medium
 
   * Bump Version
