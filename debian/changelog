@@ -1,3 +1,9 @@
+ottopia-keepalived-exporter (0.6.0) unstable; urgency=medium
+
+  * Bump version 0.6.0
+
+ -- Ottopia Technologies <info@ottopia.tech>  Thu, 20 Mar 2024 17:35:00 +0200
+
 ottopia-keepalived-exporter (0.5.9) unstable; urgency=medium
 
   * Bump version 0.5.9
