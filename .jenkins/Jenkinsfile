@@ -1,18 +1,9 @@
 @Library('ottopia')_
 
 pipeline {
-    agent {
-        kubernetes {
-            inheritFrom 'medium'
-            containerTemplate {
-                name 'main'
-                image "${DOCKER_REGISTRY_URI_PREFIX}/jenkins_${REPO_NAME}:x86_64_ubuntu_focal"
-            }
-        }
-    }
+    agent none
 
     options {
-        timeout(time: params.WITH_SSH ? 100 : 60, unit: 'MINUTES')
         timestamps()
         skipDefaultCheckout()
     }
@@ -25,47 +16,66 @@ pipeline {
         REPO_NAME = 'keepalived-exporter'
         GITHUB_SSH_KEY = 'github_ottopia-rnd'
         BRANCH_NAME_NO_SLASHES = BRANCH_NAME.replace("/","_")
+        PYPI_SERVER = credentials('jfrog-pypi-server') // used in Makefile to retrieve packages
     }
     
     stages {
-        stage('Prepare') {
-            steps {
-                publishChecks(name: "${REPO_NAME}", status: 'IN_PROGRESS', text: 'Build is in progress')
-                gitClone(credentials: GITHUB_SSH_KEY, branchName: BRANCH_NAME, repoName: REPO_NAME)
-            }
-        }
         stage('Build') {
-            steps {
-                sh(
-                    label: 'Build Debian Package',
-                    script: """
-                        dpkg-buildpackage -b -uc -ui
-                        mv ../*.deb .
-                    """
-                )
+            agent {
+                kubernetes {
+                    inheritFrom 'medium'
+                    containerTemplate {
+                        name 'main'
+                        image "${DOCKER_REGISTRY_URI_PREFIX}/jenkins_${REPO_NAME}:x86_64_ubuntu_focal"
+                    }
+                }
             }
-        }
-        stage('Archive') {
-            steps {
-                archiveArtifacts(artifacts: '*.deb', fingerprint: true, onlyIfSuccessful: true)
+        
+            options {
+                timeout(time: params.WITH_SSH ? 100 : 60, unit: 'MINUTES')
             }
-        }
-    }
-    post {
-        success {
-            publishChecks(name: "${REPO_NAME}", text: 'Build succeeded')
-        }
-        failure {
-            failureInfraFunc(repo_name: REPO_NAME, branch_name: BRANCH_NAME, build_number: BUILD_NUMBER)
-            publishChecks(conclusion: 'FAILURE', name: "${REPO_NAME}", text: 'Build failed')
-        }
-        aborted {
-            publishChecks(conclusion: 'CANCELED', name: "${REPO_NAME}", text: 'Build failed')
-        }
-        always {
-            script {
-                if (params.WITH_SSH) {
-                    enableSSH(timeout: 3600)
+        
+            stages {        
+                stage('Prepare') {
+                    steps {
+                        publishChecks(name: "${REPO_NAME}", status: 'IN_PROGRESS', text: 'Build is in progress')
+                        gitClone(credentials: GITHUB_SSH_KEY, branchName: BRANCH_NAME, repoName: REPO_NAME)
+                    }
+                }
+                stage('Build') {
+                    steps {
+                        sh(
+                            label: 'Build Debian Package',
+                            script: """
+                                dpkg-buildpackage -b -uc -ui
+                                mv ../*.deb .
+                            """
+                        )
+                    }
+                }
+                stage('Archive') {
+                    steps {
+                        archiveArtifacts(artifacts: '*.deb', fingerprint: true, onlyIfSuccessful: true)
+                    }
+                }
+            }
+            post {
+                success {
+                    publishChecks(name: "${REPO_NAME}", text: 'Build succeeded')
+                }
+                failure {
+                    failureInfraFunc()
+                    publishChecks(conclusion: 'FAILURE', name: "${REPO_NAME}", text: 'Build failed')
+                }
+                aborted {
+                    publishChecks(conclusion: 'CANCELED', name: "${REPO_NAME}", text: 'Build failed')
+                }
+                always {
+                    script {
+                        if (params.WITH_SSH) {
+                            enableSSH(timeout: 3600)
+                        }
+                    }
                 }
             }
         }
