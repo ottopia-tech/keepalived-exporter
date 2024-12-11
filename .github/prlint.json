@@ -1,0 +1,14 @@
+{
+  "title": [
+    {
+      "pattern": "RD-\\d{1,6}",
+      "message": "You need a JIRA ticket in your title (If there is none, just add RD-0)"
+    }
+  ],
+  "body": [
+    {
+      "pattern": "RD-\\d{1,6}",
+      "message": "You need a JIRA ticket in your description (If there is none, just add RD-0)"
+    }
+  ]
+}

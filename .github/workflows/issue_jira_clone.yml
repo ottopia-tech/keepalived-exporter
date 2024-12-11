@@ -1,0 +1,26 @@
+name: Ticket In Sprint With Clone
+
+on:
+  pull_request:
+    types: [ opened, synchronize, edited, ready_for_review ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Clone Infra-ci
+      run: |
+        git clone https://ottopia-rnd:${{ secrets.REPO_CLONE }}@github.com/ottopia-tech/infra-ci.git
+    - name: Run python script to check if issue in active sprint
+      run: |
+        pip install -r ./infra-ci/jira_utils/jira_requirements.txt
+        python3 ./infra-ci/jira_utils/issue_in_sprint.py '${{ github.event.pull_request.title }}' ${{ secrets.JIRA_USER_MAIL }} ${{ secrets.JIRA_TOKEN }}
+    - name: Remove Infra-ci
+      run: |
+        rm -rf infra-ci
