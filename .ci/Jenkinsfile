@@ -1,0 +1,81 @@
+@Library('ottopia')_
+
+pipeline {
+    agent none
+
+    options {
+        timestamps()
+        skipDefaultCheckout()
+    }
+
+    parameters {
+        booleanParam(name: 'WITH_SSH', defaultValue: false, description: 'Do you want SSH?')
+    }
+
+    environment { 
+        REPO_NAME = 'keepalived-exporter'
+        PYPI_SERVER = credentials('jfrog-pypi-server') // used in Makefile to retrieve packages
+    }
+    
+    stages {
+        stage('Build') {
+            agent {
+                kubernetes {
+                    inheritFrom 'medium'
+                    containerTemplate {
+                        name 'main'
+                        image "${DOCKER_REGISTRY_URI_PREFIX}/jenkins_${REPO_NAME}:x86_64_ubuntu_focal"
+                    }
+                }
+            }
+        
+            options {
+                timeout(time: params.WITH_SSH ? 100 : 60, unit: 'MINUTES')
+            }
+        
+            stages {        
+                stage('Prepare') {
+                    steps {
+                        publishChecks(name: "${REPO_NAME} over GCP", status: 'IN_PROGRESS', text: 'Build is in progress')
+                        gitClone(branchName: BRANCH_NAME, repoName: REPO_NAME)
+                    }
+                }
+                stage('Build') {
+                    steps {
+                        sh(
+                            label: 'Build Debian Package',
+                            script: """
+                                dpkg-buildpackage -b -uc -ui
+                                mv ../*.deb .
+                            """
+                        )
+                    }
+                }
+                stage('Archive') {
+                    steps {
+                        archiveArtifacts(artifacts: '*.deb', fingerprint: true, onlyIfSuccessful: true)
+                    }
+                }
+            }
+            post {
+                success {
+                    publishChecks(name: "${REPO_NAME} over GCP", text: 'Build succeeded')
+                }
+                failure {
+                    failureInfraFunc()
+                    publishChecks(conclusion: 'FAILURE', name: "${REPO_NAME} over GCP", text: 'Build failed')
+                }
+                aborted {
+                    publishChecks(conclusion: 'CANCELED', name: "${REPO_NAME} over GCP", text: 'Build failed')
+                }
+                always {
+                    script {
+                        if (params.WITH_SSH) {
+                            enableSSH(timeout: 3600)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
